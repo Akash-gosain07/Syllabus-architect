@@ -1,0 +1,5 @@
+{
+  "name": "Syllabus Architect",
+  "description": "An intelligent academic planning tool that extracts deadlines and requirements from course syllabi to generate a unified, conflict-aware semester schedule.",
+  "requestFramePermissions": []
+}
