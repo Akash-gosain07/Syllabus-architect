@@ -6,18 +6,16 @@ export default defineConfig(({ mode }) => {
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
   const env = loadEnv(mode, (process as any).cwd(), '');
 
-  // CRITICAL FIX for Vercel:
-  // Vercel injects environment variables into 'process.env' during the build command.
-  // loadEnv() primarily reads from .env files. We must check process.env first.
-  const apiKey = process.env.API_KEY || env.API_KEY;
+  // CRITICAL FIX: Use the provided API Key as a fallback if the system environment variable is missing.
+  // This ensures the app works immediately in preview environments.
+  const apiKey = process.env.API_KEY || env.API_KEY || "AIzaSyDqnOFY-JKJK1ZlZUveOOlAsVRVPdSg_vk";
 
   return {
     plugins: [react()],
     define: {
       // This performs a static replacement during build.
       // Every instance of `process.env.API_KEY` in your code will be replaced 
-      // with the actual string value from your Vercel settings.
-      // We use JSON.stringify to ensure it is inserted as a valid string literal.
+      // with the actual string value.
       'process.env.API_KEY': JSON.stringify(apiKey),
     },
     build: {
