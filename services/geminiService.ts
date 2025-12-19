@@ -60,8 +60,9 @@ export const extractSyllabusData = async (
   `;
 
   try {
+    // Fix: Use 'gemini-3-flash-preview' for text tasks as per guidelines
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-latest',
+      model: 'gemini-3-flash-preview',
       contents: [
         {
           role: 'user',
