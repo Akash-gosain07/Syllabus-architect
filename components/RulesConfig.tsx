@@ -13,87 +13,79 @@ export const RulesConfig: React.FC<RulesConfigProps> = ({ rules, setRules }) => 
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 animate-slide-up-fade">
-      <div className="space-y-2 border-b border-white/10 pb-6">
-        <h2 className="text-3xl font-bold text-white font-sans tracking-tight">SYSTEM PARAMETERS</h2>
-        <p className="text-gray-500 font-mono text-sm">Configure threat detection logic and workload thresholds.</p>
+    <div className="max-w-3xl mx-auto space-y-10 animate-fade-in">
+      
+      <div>
+        <h2 className="text-2xl font-bold text-white tracking-tight">Configuration</h2>
+        <p className="text-gray-500 text-sm mt-1">Customize how the architect analyzes your workload.</p>
       </div>
 
-      <div className="grid gap-6">
+      <div className="space-y-6">
         
-        {/* Card 1 */}
-        <div className="bg-surfaceHighlight/20 border border-white/5 p-6 rounded-lg backdrop-blur-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold text-white font-mono uppercase">High Impact Threshold</h3>
-            <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_5px_#a855f7]"></div>
+        {/* Setting Item */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-6 glass-panel rounded-xl border border-white/5 hover:border-white/10 transition-colors">
+          <div className="mb-4 sm:mb-0">
+             <h3 className="text-base font-medium text-white">High Impact Threshold</h3>
+             <p className="text-sm text-gray-500 mt-1 max-w-sm">Items above this weightage will be flagged as critical priority.</p>
           </div>
-          <div className="flex justify-between items-center">
-             <p className="text-sm text-gray-400 max-w-md">
-                Assignments exceeding this weightage will trigger a <span className="text-primary font-bold">PRIORITY ALERT</span>.
-             </p>
-             <div className="flex items-center bg-black/50 border border-white/10 rounded px-3 py-2">
-                <input 
-                  type="number" 
-                  value={rules.highWeightThreshold}
-                  onChange={(e) => handleChange('highWeightThreshold', parseInt(e.target.value))}
-                  className="w-12 bg-transparent text-right font-mono text-white outline-none"
-                />
-                <span className="text-gray-500 text-xs ml-2">%</span>
+          <div className="flex items-center gap-3">
+             <input 
+               type="range" 
+               min="10" max="50" step="5"
+               value={rules.highWeightThreshold}
+               onChange={(e) => handleChange('highWeightThreshold', parseInt(e.target.value))}
+               className="w-32 accent-primary h-1 bg-white/20 rounded-lg appearance-none cursor-pointer"
+             />
+             <div className="w-16 px-3 py-2 bg-black/40 rounded-lg border border-white/10 text-center font-mono text-sm text-white">
+               {rules.highWeightThreshold}%
              </div>
           </div>
         </div>
 
-        {/* Card 2 */}
-        <div className="bg-surfaceHighlight/20 border border-white/5 p-6 rounded-lg backdrop-blur-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold text-white font-mono uppercase">Exam Proximity Buffer</h3>
-            <div className="w-2 h-2 rounded-full bg-accent shadow-[0_0_5px_#22c55e]"></div>
+        {/* Setting Item */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-6 glass-panel rounded-xl border border-white/5 hover:border-white/10 transition-colors">
+          <div className="mb-4 sm:mb-0">
+             <h3 className="text-base font-medium text-white">Exam Warning Buffer</h3>
+             <p className="text-sm text-gray-500 mt-1 max-w-sm">How many days in advance should exam proximity alerts trigger?</p>
           </div>
-          <div className="flex justify-between items-center">
-             <p className="text-sm text-gray-400 max-w-md">
-                Define the "Danger Zone" window (in days) before a major exam.
-             </p>
-             <div className="flex items-center bg-black/50 border border-white/10 rounded px-3 py-2">
-                <input 
-                  type="number" 
-                  value={rules.examWeekBuffer}
-                  onChange={(e) => handleChange('examWeekBuffer', parseInt(e.target.value))}
-                  className="w-12 bg-transparent text-right font-mono text-white outline-none"
-                />
-                <span className="text-gray-500 text-xs ml-2">DAYS</span>
+          <div className="flex items-center gap-3">
+             <div className="w-16 px-3 py-2 bg-black/40 rounded-lg border border-white/10 text-center font-mono text-sm text-white">
+               {rules.examWeekBuffer}
+             </div>
+             <span className="text-sm text-gray-500">Days</span>
+             <div className="flex flex-col gap-1">
+               <button onClick={() => handleChange('examWeekBuffer', rules.examWeekBuffer + 1)} className="p-1 hover:bg-white/10 rounded"><svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg></button>
+               <button onClick={() => handleChange('examWeekBuffer', Math.max(1, rules.examWeekBuffer - 1))} className="p-1 hover:bg-white/10 rounded"><svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg></button>
              </div>
           </div>
         </div>
 
-        {/* Card 3 */}
-        <div className="bg-surfaceHighlight/20 border border-white/5 p-6 rounded-lg backdrop-blur-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold text-white font-mono uppercase">Overload Limit</h3>
-            <div className="w-2 h-2 rounded-full bg-alert shadow-[0_0_5px_#ef4444]"></div>
+        {/* Setting Item */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-6 glass-panel rounded-xl border border-white/5 hover:border-white/10 transition-colors">
+          <div className="mb-4 sm:mb-0">
+             <h3 className="text-base font-medium text-white">Daily Workload Cap</h3>
+             <p className="text-sm text-gray-500 mt-1 max-w-sm">Maximum number of deliverables per day before flagging a conflict.</p>
           </div>
-          <div className="flex justify-between items-center">
-             <p className="text-sm text-gray-400 max-w-md">
-                Maximum acceptable deliverables per 24-hour cycle.
-             </p>
-             <div className="flex items-center bg-black/50 border border-white/10 rounded px-3 py-2">
-                <input 
-                  type="number" 
-                  value={rules.maxItemsPerDay}
-                  onChange={(e) => handleChange('maxItemsPerDay', parseInt(e.target.value))}
-                  className="w-12 bg-transparent text-right font-mono text-white outline-none"
-                />
-                <span className="text-gray-500 text-xs ml-2">ITEMS</span>
+           <div className="flex items-center gap-3">
+             <div className="w-16 px-3 py-2 bg-black/40 rounded-lg border border-white/10 text-center font-mono text-sm text-white">
+               {rules.maxItemsPerDay}
+             </div>
+             <span className="text-sm text-gray-500">Items</span>
+             <div className="flex flex-col gap-1">
+               <button onClick={() => handleChange('maxItemsPerDay', rules.maxItemsPerDay + 1)} className="p-1 hover:bg-white/10 rounded"><svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg></button>
+               <button onClick={() => handleChange('maxItemsPerDay', Math.max(1, rules.maxItemsPerDay - 1))} className="p-1 hover:bg-white/10 rounded"><svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg></button>
              </div>
           </div>
         </div>
+
       </div>
 
-      <div className="flex justify-end pt-6 border-t border-white/10">
+      <div className="flex justify-end pt-4">
         <button 
           onClick={() => setRules(INITIAL_RULES)}
-          className="text-xs font-mono text-gray-500 hover:text-white uppercase tracking-widest transition-colors"
+          className="text-sm text-gray-500 hover:text-white transition-colors underline decoration-dotted"
         >
-          [ Reset Factory Defaults ]
+          Reset to defaults
         </button>
       </div>
     </div>

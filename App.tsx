@@ -8,140 +8,198 @@ import { ViewState, Course, UserRules } from './types';
 
 const API_KEY = process.env.API_KEY || "";
 
-// --- Intro Animation Component ---
-const IntroSequence = ({ onComplete }: { onComplete: () => void }) => {
+// --- Cinematic Intro Animation ---
+const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
   const [progress, setProgress] = useState(0);
-  const [text, setText] = useState("INITIALIZING...");
+  const [isExit, setIsExit] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress(prev => {
+    const timer = setInterval(() => {
+      setProgress((prev) => {
         if (prev >= 100) {
-          clearInterval(interval);
+          clearInterval(timer);
+          setTimeout(() => {
+            setIsExit(true);
+            setTimeout(onComplete, 800); // Matches slide-up-curtain duration
+          }, 400);
           return 100;
         }
-        return prev + Math.floor(Math.random() * 15);
+        // Random increment for realistic loading feel
+        return Math.min(prev + Math.floor(Math.random() * 4) + 1, 100);
       });
-    }, 150);
+    }, 30);
 
-    const textTimers = [
-      setTimeout(() => setText("LOADING MODULES..."), 800),
-      setTimeout(() => setText("OPTIMIZING SCHEDULE..."), 1600),
-      setTimeout(() => setText("SYSTEM READY"), 2400),
-    ];
-
-    const finishTimer = setTimeout(() => {
-      onComplete();
-    }, 3000);
-
-    return () => {
-      clearInterval(interval);
-      textTimers.forEach(clearTimeout);
-      clearTimeout(finishTimer);
-    };
+    return () => clearInterval(timer);
   }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center font-mono text-white">
-      <div className="w-64 space-y-4">
-        <div className="flex justify-between text-xs text-accent tracking-widest">
-          <span>BOOT_SEQUENCE_V1.0</span>
-          <span>{Math.min(progress, 100)}%</span>
-        </div>
-        <div className="h-1 w-full bg-gray-900 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-accent shadow-[0_0_10px_#22c55e] transition-all duration-200"
-            style={{ width: `${Math.min(progress, 100)}%` }}
-          ></div>
-        </div>
-        <div className="text-center text-sm text-gray-400 animate-pulse">
-          {'>'} {text} <span className="animate-blink">_</span>
-        </div>
-      </div>
+    <div className={`fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center overflow-hidden ${isExit ? 'animate-slide-up-curtain' : ''}`}>
       
-      {/* Decorative Glitch Elements */}
-      <div className="absolute bottom-10 left-10 text-[10px] text-gray-600 font-mono opacity-50">
-        MEM_ALLOC: 0x4921<br/>
-        CPU_THREAD: ACTIVE
+      {/* Background Ambience */}
+      <div className="absolute inset-0 opacity-20">
+         <div className="absolute top-[-20%] left-[-20%] w-[80vw] h-[80vw] bg-primary/30 rounded-full blur-[150px] animate-blob"></div>
+         <div className="absolute bottom-[-20%] right-[-20%] w-[80vw] h-[80vw] bg-accent/20 rounded-full blur-[150px] animate-blob animation-delay-2000"></div>
+      </div>
+
+      <div className="relative z-10 w-full max-w-2xl px-8 flex flex-col items-center">
+        {/* Typography Reveal */}
+        <div className="flex flex-col md:flex-row items-baseline gap-2 md:gap-4 overflow-hidden mb-12">
+           <div className="overflow-hidden">
+             <h1 className="text-4xl md:text-7xl font-bold text-white tracking-tighter animate-text-reveal">
+               SYLLABUS
+             </h1>
+           </div>
+           <div className="overflow-hidden">
+             <h1 className="text-4xl md:text-7xl font-light text-gray-400 tracking-tighter animate-text-reveal" style={{ animationDelay: '0.1s' }}>
+               ARCHITECT
+             </h1>
+           </div>
+        </div>
+
+        {/* Minimal Progress Line */}
+        <div className="w-full max-w-sm h-[1px] bg-white/10 relative overflow-hidden">
+           <div 
+             className="absolute top-0 left-0 h-full bg-white transition-all duration-100 ease-out" 
+             style={{ width: `${progress}%` }}
+           ></div>
+        </div>
+
+        {/* Loading Status */}
+        <div className="mt-4 flex justify-between w-full max-w-sm text-[10px] font-mono uppercase tracking-widest text-gray-500">
+           <div className="flex items-center gap-2">
+             <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></span>
+             <span>Initializing Neural Core</span>
+           </div>
+           <span className="tabular-nums">{progress}%</span>
+        </div>
       </div>
     </div>
   );
 };
 
 const LandingPage = ({ onStart }: { onStart: () => void }) => (
-  <div className="relative flex flex-col items-center justify-center min-h-full w-full overflow-hidden bg-background">
+  <div className="relative min-h-full w-full overflow-hidden bg-background text-white selection:bg-primary/30">
     
-    {/* Dynamic Background */}
-    <div className="absolute inset-0 overflow-hidden">
-       <div className="absolute top-[20%] left-[10%] w-[30vw] h-[30vw] bg-primary/20 rounded-full blur-[120px] animate-pulse-fast"></div>
-       <div className="absolute bottom-[20%] right-[10%] w-[25vw] h-[25vw] bg-accent/10 rounded-full blur-[100px]" style={{ animationDelay: '1s' }}></div>
-       <div className="absolute inset-0 bg-noise opacity-30"></div>
-       {/* Grid overlay */}
-       <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
-    </div>
-    
-    <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-      
-      {/* Status Badge */}
-      <div className="inline-flex items-center gap-3 px-4 py-2 border border-accent/30 rounded-full bg-accent/5 backdrop-blur-md mb-10 animate-slide-up-fade">
-        <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
-        </span>
-        <span className="text-xs font-mono font-bold tracking-widest text-accent uppercase">Academic Weapon Mode: ON</span>
-      </div>
+    {/* Ambient Background */}
+    <div className="absolute top-0 left-0 right-0 h-[600px] bg-mesh-gradient opacity-60 pointer-events-none"></div>
+    <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[128px] animate-blob mix-blend-screen"></div>
+    <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-secondary/10 rounded-full blur-[128px] animate-blob animation-delay-2000 mix-blend-screen"></div>
 
-      {/* Main Title */}
-      <div className="relative mb-8 animate-slide-up-fade" style={{ animationDelay: '0.1s' }}>
-        <h1 className="text-7xl md:text-9xl font-sans font-bold text-white tracking-tighter leading-none relative z-10 group cursor-default">
-          SYLLABUS
-          <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-accent animate-gradient-x">ARCHITECT</span>
-        </h1>
-        {/* Glitch Shadow Effect */}
-        <h1 className="absolute top-1 left-1 text-7xl md:text-9xl font-sans font-bold text-red-500/20 tracking-tighter leading-none -z-10 animate-glitch opacity-0 group-hover:opacity-100 transition-opacity">
-          SYLLABUS<br/>ARCHITECT
-        </h1>
-      </div>
+    <div className="relative z-10 max-w-6xl mx-auto px-6 py-20 flex flex-col items-center text-center">
       
-      <p className="text-lg md:text-xl text-gray-400 font-body max-w-2xl mx-auto leading-relaxed mb-12 animate-slide-up-fade" style={{ animationDelay: '0.2s' }}>
-        Stop drowning in PDFs. <br/>
-        We extract the deadlines. You secure the GPA. 
-        <span className="block mt-2 text-white font-mono text-sm opacity-70">Powered by automated intelligence.</span>
-      </p>
-
-      {/* Start Button */}
-      <div className="animate-slide-up-fade" style={{ animationDelay: '0.3s' }}>
-        <button 
-          onClick={onStart}
-          className="group relative px-12 py-5 bg-white text-black font-sans font-bold text-lg uppercase tracking-wider overflow-hidden hover:scale-105 transition-transform duration-300 rounded-sm"
-        >
-          {/* Button Tech Borders */}
-          <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-black"></div>
-          <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-black"></div>
-          
-          <span className="relative z-10 flex items-center gap-3">
-            Initialize System
-            <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+      {/* Hero Section */}
+      <div className="space-y-8 max-w-4xl animate-slide-up">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-gray-300 backdrop-blur-sm">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
           </span>
-          <div className="absolute inset-0 bg-accent transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 ease-out -z-0"></div>
-        </button>
+          System v2.0 Operational
+        </div>
+        
+        <h1 className="text-6xl md:text-9xl font-bold tracking-tighter leading-[0.9] text-white">
+          Semester, <br/>
+          <span className="text-shimmer">Architected.</span>
+        </h1>
+        
+        <p className="text-xl text-gray-400 font-light leading-relaxed max-w-2xl mx-auto">
+          The intelligent workspace for students who optimize. 
+          Upload syllabi, visualize critical paths, and architect your GPA.
+        </p>
+
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-6">
+          <button 
+            onClick={onStart}
+            className="group relative px-8 py-4 bg-white text-black rounded-full font-medium text-sm hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(255,255,255,0.2)] overflow-hidden"
+          >
+            <span className="relative z-10">Start Planning</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-100 to-white opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          </button>
+          
+          <button className="text-sm font-medium text-gray-400 hover:text-white transition-colors flex items-center gap-2 group">
+            <span>Watch Demo</span>
+            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+          </button>
+        </div>
       </div>
 
-      {/* Stats / Features */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-24 border-t border-white/10 pt-8 animate-slide-up-fade" style={{ animationDelay: '0.5s' }}>
-        {[
-          { label: "Parsing Speed", val: "0.4s" },
-          { label: "Accuracy", val: "99.9%" },
-          { label: "User Status", val: "Elite" },
-          { label: "System", val: "Online" }
-        ].map((stat, i) => (
-          <div key={i} className="text-left font-mono">
-            <div className="text-[10px] text-gray-500 uppercase mb-1">{stat.label}</div>
-            <div className="text-xl text-white font-bold">{stat.val}</div>
+      {/* Bento Grid Features */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-32 w-full animate-slide-up" style={{ animationDelay: '0.2s' }}>
+        
+        {/* Card 1: Large */}
+        <div className="md:col-span-2 glass-card p-10 rounded-3xl relative overflow-hidden group text-left border border-white/5 hover:border-white/10 transition-colors duration-500">
+          <div className="relative z-10 max-w-md">
+            <h3 className="text-2xl font-bold mb-3 text-white">Intelligent Extraction</h3>
+            <p className="text-gray-400 leading-relaxed">Our multimodal AI engine ingests PDFs and images instantly. It contextualizes "Midterm", "Final", and ambiguous deadlines with human-like precision.</p>
           </div>
-        ))}
+          <div className="absolute right-0 bottom-0 w-2/3 h-full bg-gradient-to-l from-primary/10 to-transparent pointer-events-none"></div>
+          
+          {/* Abstract floating UI visual */}
+          <div className="absolute right-[-20px] bottom-[-40px] opacity-40 group-hover:opacity-80 transition-all duration-700 ease-out transform group-hover:translate-y-[-10px] group-hover:rotate-[-2deg]">
+             <div className="w-64 h-40 bg-[#18181b] rounded-xl border border-white/10 shadow-2xl p-4">
+                <div className="w-1/2 h-4 bg-white/20 rounded mb-4"></div>
+                <div className="space-y-2">
+                   <div className="w-full h-2 bg-white/5 rounded"></div>
+                   <div className="w-3/4 h-2 bg-white/5 rounded"></div>
+                   <div className="w-full h-2 bg-white/5 rounded"></div>
+                </div>
+             </div>
+          </div>
+        </div>
+
+        {/* Card 2: Tall */}
+        <div className="md:row-span-2 glass-card p-10 rounded-3xl text-left flex flex-col justify-between group hover:bg-white/[0.02] transition-colors border border-white/5">
+           <div>
+             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center mb-6 text-secondary border border-secondary/20 shadow-[0_0_20px_rgba(236,72,153,0.15)]">
+               <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+             </div>
+             <h3 className="text-xl font-bold mb-3 text-white">Strategic Roadmap</h3>
+             <p className="text-gray-400 text-sm leading-relaxed">Visualize your entire semester as a linear timeline. Identify high-pressure weeks before they happen.</p>
+           </div>
+           
+           <div className="mt-10 space-y-3 opacity-50 group-hover:opacity-100 transition-opacity duration-500">
+              <div className="flex items-center gap-3">
+                 <div className="w-2 h-2 rounded-full bg-secondary"></div>
+                 <div className="h-1 flex-1 bg-white/10 rounded-full"></div>
+              </div>
+              <div className="flex items-center gap-3 pl-4">
+                 <div className="w-2 h-2 rounded-full bg-primary"></div>
+                 <div className="h-1 flex-1 bg-white/10 rounded-full"></div>
+              </div>
+              <div className="flex items-center gap-3">
+                 <div className="w-2 h-2 rounded-full bg-white"></div>
+                 <div className="h-1 flex-1 bg-white/10 rounded-full"></div>
+              </div>
+           </div>
+        </div>
+
+        {/* Card 3: Small */}
+        <div className="glass-card p-8 rounded-3xl text-left hover:border-white/20 transition-colors border border-white/5 flex flex-col justify-center">
+          <h3 className="text-lg font-bold mb-2 text-white">Universal Export</h3>
+          <p className="text-gray-400 text-sm">Syncs with Notion, Google Calendar, or raw JSON.</p>
+        </div>
+
+        {/* Card 4: Small */}
+        <div className="glass-card p-8 rounded-3xl text-left hover:border-error/20 transition-colors border border-white/5 relative overflow-hidden flex flex-col justify-center group">
+          <div className="absolute inset-0 bg-gradient-to-br from-error/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <h3 className="text-lg font-bold mb-2 text-white relative z-10 flex items-center gap-2">
+            Conflict Detection
+            <span className="w-2 h-2 bg-error rounded-full animate-pulse"></span>
+          </h3>
+          <p className="text-gray-400 text-sm relative z-10">Proactive warnings for exam collisions.</p>
+        </div>
+
       </div>
+      
+      <div className="mt-20 border-t border-white/5 pt-8 w-full flex justify-between items-center text-xs text-gray-600 font-mono uppercase tracking-widest">
+        <p>Syllabus Architect © 2024</p>
+        <div className="flex gap-6">
+          <a href="#" className="hover:text-white transition-colors">Privacy</a>
+          <a href="#" className="hover:text-white transition-colors">Terms</a>
+          <a href="#" className="hover:text-white transition-colors">GitHub</a>
+        </div>
+      </div>
+
     </div>
   </div>
 );
@@ -174,7 +232,7 @@ const App = () => {
   return (
     <>
       {loading ? (
-        <IntroSequence onComplete={() => setLoading(false)} />
+        <IntroOverlay onComplete={() => setLoading(false)} />
       ) : (
         <Layout currentView={view} setView={setView}>
           {renderContent()}

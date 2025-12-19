@@ -19,13 +19,13 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onCourseAdded, api
   const processFile = async (file: File) => {
     setIsProcessing(true);
     setError(null);
-    setProcessingStatus(`SCANNING: ${file.name.toUpperCase()}...`);
+    setProcessingStatus(`Analyzing ${file.name}...`);
 
     try {
       const base64 = await fileToBase64(file);
       const mimeType = file.type;
 
-      setProcessingStatus("DECRYPTING DATA STRUCTURE...");
+      setProcessingStatus("Extracting dates & requirements...");
       
       const data = await extractSyllabusData(base64, mimeType, apiKey);
 
@@ -49,14 +49,12 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onCourseAdded, api
       };
 
       onCourseAdded(newCourse);
-      setProcessingStatus("INTEGRATION COMPLETE");
-      
-      // Delay to show success state
-      await new Promise(r => setTimeout(r, 800));
+      setProcessingStatus("Complete");
+      await new Promise(r => setTimeout(r, 500));
 
     } catch (err: any) {
       console.error(err);
-      setError("PARSING FAILED: UNREADABLE FORMAT");
+      setError("Could not parse file. Ensure it is a clear syllabus PDF or Image.");
     } finally {
       setIsProcessing(false);
       setProcessingStatus("");
@@ -66,104 +64,79 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onCourseAdded, api
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    if (!apiKey) { setError("ERR: API KEY MISSING"); return; }
+    if (!apiKey) { setError("API Key not configured"); return; }
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) processFile(files[0]);
   }, [apiKey]);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      if (!apiKey) { setError("ERR: API KEY MISSING"); return; }
+      if (!apiKey) { setError("API Key not configured"); return; }
       processFile(e.target.files[0]);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto h-full flex flex-col items-center justify-center animate-slide-up-fade">
+    <div className="max-w-2xl mx-auto h-full flex flex-col justify-center animate-fade-in">
       
-      <div className="text-center space-y-2 mb-10">
-        <h2 className="text-5xl font-sans font-bold text-white tracking-tighter">DATA INGESTION</h2>
-        <p className="text-gray-500 font-mono text-sm uppercase tracking-widest">Upload Syllabus PDF/IMG to begin analysis</p>
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-white tracking-tight mb-2">Import Course</h2>
+        <p className="text-gray-400">Upload your syllabus PDF or Image. We'll handle the rest.</p>
       </div>
 
       <div 
-        className={`w-full max-w-2xl aspect-[16/9] relative rounded-lg transition-all duration-300 flex flex-col items-center justify-center overflow-hidden border-2 border-dashed ${
+        className={`relative w-full aspect-[4/3] rounded-3xl transition-all duration-300 flex flex-col items-center justify-center overflow-hidden group cursor-pointer border border-dashed ${
           isDragging 
-            ? 'border-accent bg-accent/5 scale-105' 
-            : 'border-white/20 bg-black/20 hover:border-white/40'
+            ? 'border-primary bg-primary/5' 
+            : 'border-white/10 bg-surface/50 hover:bg-surface/80 hover:border-white/20'
         }`}
         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
       >
-        {/* Animated Scanner Bar */}
-        {isProcessing && (
-           <div className="absolute inset-0 z-0 animate-scanline bg-gradient-to-b from-transparent via-accent/20 to-transparent h-1/4 w-full pointer-events-none"></div>
-        )}
+        <input 
+          type="file" 
+          accept=".pdf,.jpg,.jpeg,.png"
+          onChange={handleFileInput}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+        />
 
-        <div className="relative z-10 flex flex-col items-center justify-center space-y-6">
-          
-          <div className={`w-20 h-20 rounded-full flex items-center justify-center border transition-all ${
-            isProcessing ? 'border-accent animate-spin' : 'border-white/30'
-          }`}>
-             {isProcessing ? (
-               <div className="w-16 h-16 bg-accent/20 rounded-full animate-pulse"></div>
-             ) : (
-               <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-               </svg>
-             )}
+        {isProcessing ? (
+          <div className="flex flex-col items-center space-y-4">
+             <div className="w-12 h-12 border-2 border-white/10 border-t-white rounded-full animate-spin"></div>
+             <p className="text-sm font-medium text-gray-300 animate-pulse">{processingStatus}</p>
           </div>
-          
-          <div className="text-center space-y-4">
-            {isProcessing ? (
-              <div className="space-y-1">
-                <h3 className="text-xl font-bold text-white tracking-widest animate-pulse">PROCESSING</h3>
-                <p className="text-xs text-accent font-mono">{processingStatus}</p>
-              </div>
-            ) : (
-              <>
-                <div>
-                  <h3 className="text-lg font-bold text-white">DROP TARGET</h3>
-                  <p className="text-xs text-gray-500 font-mono mt-1">SUPPORTED: PDF // JPG // PNG</p>
-                </div>
-                
-                <div className="relative group inline-block">
-                   <input 
-                    type="file" 
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={handleFileInput}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-                  />
-                  <button className="px-8 py-2 bg-white text-black font-bold font-mono text-xs uppercase tracking-widest hover:bg-gray-200 transition-colors">
-                    Select File Manually
-                  </button>
-                </div>
-              </>
-            )}
+        ) : (
+          <div className="flex flex-col items-center space-y-6 transform group-hover:-translate-y-2 transition-transform duration-300">
+             <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:bg-white group-hover:text-black transition-colors shadow-xl">
+               <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+             </div>
+             <div className="text-center">
+               <p className="text-lg font-medium text-white">Drop syllabus here</p>
+               <p className="text-sm text-gray-500 mt-1">or click to browse files</p>
+             </div>
           </div>
-        </div>
-        
-        {/* Corner Markers */}
-        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-white/30 m-4"></div>
-        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-white/30 m-4"></div>
-        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-white/30 m-4"></div>
-        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-white/30 m-4"></div>
+        )}
       </div>
 
       {error && (
-        <div className="mt-8 bg-alert/10 border border-alert text-alert px-6 py-4 rounded flex items-center space-x-3 w-full max-w-2xl animate-pop">
-          <span className="font-bold font-mono">ERR::</span>
-          <span className="text-sm font-mono">{error}</span>
+        <div className="mt-6 p-4 bg-error/10 text-error rounded-xl text-sm flex items-center gap-3 border border-error/20">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          {error}
         </div>
       )}
-      
-      {!apiKey && (
-        <div className="mt-8 bg-yellow-500/10 border border-yellow-500/50 text-yellow-500 px-6 py-4 rounded flex items-center space-x-3 w-full max-w-2xl font-mono text-xs">
-           <span className="font-bold">WARN:</span>
-           <span>DEMO_MODE // API KEY NOT DETECTED</span>
-        </div>
-      )}
+
+      <div className="mt-12 grid grid-cols-2 gap-4">
+         <div className="p-4 rounded-xl bg-white/5 border border-white/5">
+            <h4 className="text-sm font-medium text-white mb-1">Supported Formats</h4>
+            <p className="text-xs text-gray-500">PDF, PNG, JPEG</p>
+         </div>
+         <div className="p-4 rounded-xl bg-white/5 border border-white/5">
+            <h4 className="text-sm font-medium text-white mb-1">Privacy Focused</h4>
+            <p className="text-xs text-gray-500">Processed securely via Gemini API.</p>
+         </div>
+      </div>
+
     </div>
   );
 };
