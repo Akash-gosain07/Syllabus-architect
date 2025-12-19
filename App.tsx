@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from './components/Layout';
 import { UploadSection } from './components/UploadSection';
 import { Dashboard } from './components/Dashboard';
@@ -88,6 +88,15 @@ const App = () => {
   const [view, setView] = useState<ViewState>(ViewState.LANDING);
   const [courses, setCourses] = useState<Course[]>([]);
   const [rules, setRules] = useState<UserRules>(INITIAL_RULES);
+
+  useEffect(() => {
+    // Debugging helper: Check console to see if API Key is loaded
+    if (API_KEY) {
+      console.log("System Check: API Key is configured and loaded.");
+    } else {
+      console.warn("System Check: API Key is MISSING or undefined.");
+    }
+  }, []);
 
   const handleCourseAdd = (course: Course) => {
     setCourses(prev => [...prev, course]);
